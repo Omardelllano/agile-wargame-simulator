@@ -1,0 +1,408 @@
+/* ============================================================
+   Agile Wargame Simulator — Dark Terminal Theme
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0d1117;
+  --surface:    #161b22;
+  --surface2:   #1c2128;
+  --border:     #30363d;
+  --text:       #c9d1d9;
+  --muted:      #8b949e;
+  --accent:     #58a6ff;
+  --green:      #3fb950;
+  --yellow:     #d29922;
+  --red:        #f85149;
+  --purple:     #bc8cff;
+  --cyan:       #39c5cf;
+  --orange:     #e3b341;
+
+  --font: "Courier New", Courier, monospace;
+  --radius: 6px;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.5;
+  height: 100%;
+}
+
+/* ---- Layout ---- */
+#app {
+  display: grid;
+  grid-template-rows: 45px 1fr;
+  min-height: 100vh;
+}
+
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+header h1 {
+  font-size: 14px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+header .version {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 270px 1fr 310px;
+  height: calc(100vh - 45px);
+  overflow: hidden;
+}
+
+/* ---- Generic panel ---- */
+.panel {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 14px;
+}
+
+.panel-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---- Config Panel ---- */
+.field { margin-bottom: 13px; }
+
+.field label {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.field select,
+.field input[type="number"] {
+  width: 100%;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+  font-family: var(--font);
+  font-size: 12px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.field select:focus,
+.field input:focus { border-color: var(--accent); }
+
+.btn {
+  display: block;
+  width: 100%;
+  padding: 9px 0;
+  background: var(--accent);
+  color: #000;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: opacity 0.15s;
+  margin-bottom: 10px;
+}
+
+.btn:hover   { opacity: 0.85; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+#status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+
+.status-idle    { background: var(--surface2); color: var(--muted); }
+.status-running { background: #1a3a1a; color: var(--green); }
+.status-done    { background: #0c2040; color: var(--accent); }
+.status-error   { background: #3a1010; color: var(--red); }
+
+/* ---- Friction gauge ---- */
+.gauge-wrap { margin: 16px 0; }
+
+.gauge-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.gauge-bar-bg {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  height: 12px;
+  overflow: hidden;
+}
+
+.gauge-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease, background-color 0.5s ease;
+  width: 0%;
+  background: var(--green);
+}
+
+/* ---- Agent cards ---- */
+.agent-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.agent-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 7px 9px;
+  transition: border-color 0.25s;
+}
+
+.agent-name {
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-action { font-size: 11px; font-weight: bold; }
+.agent-conf   { font-size: 10px; color: var(--muted); }
+
+/* Border colour by last action */
+.card-APPROVE      { border-color: var(--cyan); }
+.card-VETO         { border-color: var(--red); }
+.card-BLOCK_DONE   { border-color: var(--red); }
+.card-COMPLETE     { border-color: var(--green); }
+.card-ESCALATE     { border-color: var(--yellow); }
+.card-FLAG         { border-color: var(--orange); }
+.card-REPRIORITIZE { border-color: var(--accent); }
+.card-IMPEDIMENT   { border-color: var(--purple); }
+.card-IDLE         { border-color: var(--border); }
+
+/* ---- Center turn log ---- */
+.center-panel {
+  background: var(--bg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.log-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 7px 14px;
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.turn-log {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.turn-log table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.turn-log thead th {
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 5px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.turn-log tbody tr {
+  border-bottom: 1px solid var(--border);
+  animation: fadeIn 0.18s ease;
+}
+
+.turn-log tbody tr:nth-child(even) { background: var(--surface); }
+
+.turn-log td { padding: 4px 10px; vertical-align: top; }
+
+.col-sprint { color: var(--muted); width: 44px; }
+.col-turn   { color: var(--muted); width: 36px; }
+.col-agent  { width: 130px; font-weight: bold; }
+.col-action { width: 96px; }
+.col-conf   { width: 44px; text-align: right; color: var(--muted); }
+.col-rat    { color: var(--muted); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Action colours */
+.action-APPROVE      { color: var(--cyan); }
+.action-VETO         { color: var(--red); font-weight: bold; }
+.action-BLOCK_DONE   { color: var(--red); }
+.action-COMPLETE     { color: var(--green); font-weight: bold; }
+.action-ESCALATE     { color: var(--yellow); }
+.action-FLAG         { color: var(--orange); font-weight: bold; }
+.action-REPRIORITIZE { color: var(--accent); }
+.action-IMPEDIMENT   { color: var(--purple); font-weight: bold; }
+.action-IDLE         { color: var(--muted); }
+
+/* ---- God Agent report panel ---- */
+.report-panel {
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 14px;
+}
+
+.sprint-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.sprint-tab {
+  padding: 2px 9px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--surface2);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.sprint-tab:hover  { border-color: var(--accent); color: var(--accent); }
+.sprint-tab.active { border-color: var(--accent); color: var(--accent); background: #0c2040; }
+
+.report-section { margin-bottom: 16px; }
+
+.report-section h3 {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 7px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.report-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.meta-item { font-size: 11px; }
+.meta-key  { color: var(--muted); }
+.meta-val  { color: var(--text); font-weight: bold; }
+
+.risk-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius);
+  padding: 7px 9px;
+  margin-bottom: 7px;
+  font-size: 11px;
+}
+
+.risk-card.HIGH   { border-left-color: var(--red); }
+.risk-card.MEDIUM { border-left-color: var(--yellow); }
+.risk-card.LOW    { border-left-color: var(--green); }
+
+.risk-header     { display: flex; justify-content: space-between; margin-bottom: 3px; }
+.risk-id         { color: var(--muted); font-size: 10px; }
+.sev-HIGH        { color: var(--red); font-weight: bold; font-size: 10px; }
+.sev-MEDIUM      { color: var(--yellow); font-weight: bold; font-size: 10px; }
+.sev-LOW         { color: var(--green); font-weight: bold; font-size: 10px; }
+.risk-desc       { color: var(--text); margin-bottom: 3px; }
+.risk-rec        { color: var(--muted); font-style: italic; font-size: 10px; }
+
+.rec-list        { list-style: none; }
+.rec-list li {
+  padding: 4px 0 4px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+  position: relative;
+}
+
+.rec-list li::before { content: "›"; position: absolute; left: 0; color: var(--accent); }
+
+.empty-state {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* ---- Animations ---- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.running-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-right: 5px;
+  animation: pulse 1.1s ease infinite;
+  vertical-align: middle;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }

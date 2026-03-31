@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m wargame run --provider mock --scenario seeds/etp/ --sprints 1)",
+      "Bash(python -c \":*)",
+      "Bash(python -m wargame run --provider mock --scenario seeds/etp/ --sprints 2)",
+      "Bash(python -:*)",
+      "Bash(cd:*)"
+    ]
+  }
+}

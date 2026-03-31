@@ -1,0 +1,20 @@
+{
+  "migration_strategy": "strangler_fig",
+  "timeline_weeks": 16,
+  "budget_constraint": "fixed",
+  "sla_downtime_minutes_per_month": 30,
+  "compliance": ["GDPR", "PCI-DSS"],
+  "legacy_system": {
+    "language": "Java 8",
+    "database": "Oracle 12c",
+    "deployment": "on-premise",
+    "test_coverage_pct": 12
+  },
+  "target_system": {
+    "language": "Java 17",
+    "framework": "Spring Boot 3",
+    "database": "PostgreSQL on Azure",
+    "deployment": "Azure Kubernetes Service",
+    "test_coverage_target_pct": 80
+  }
+}

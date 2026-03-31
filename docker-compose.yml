@@ -1,0 +1,35 @@
+services:
+  wargame-api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./output:/app/output
+      - ./seeds:/app/seeds
+    environment:
+      - PROVIDER=mock
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - CHROMA_HOST=chromadb
+      - DATABASE_URL=sqlite:///./output/wargame.db
+    depends_on:
+      - chromadb
+
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+
+  sqlite-web:
+    image: coleifer/sqlite-web
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./output:/data
+    command: sqlite_web --host 0.0.0.0 /data/wargame.db
+
+volumes:
+  chroma_data:

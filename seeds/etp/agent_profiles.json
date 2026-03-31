@@ -1,0 +1,92 @@
+{
+  "agents": [
+    {
+      "role": "developer",
+      "display_name": "Dev Agent",
+      "seniority": "senior",
+      "experience_years": 5,
+      "tech_stack": ["Java 17", "Spring Boot 3", "Hibernate", "Maven"],
+      "cognitive_bias": "optimism_bias",
+      "friction_sensitivity": 0.3,
+      "velocity_multiplier": 1.0,
+      "tech_debt_tolerance": 0.6
+    },
+    {
+      "role": "qa_engineer",
+      "display_name": "QA Agent",
+      "seniority": "senior",
+      "experience_years": 6,
+      "tech_stack": ["Selenium", "k6", "Postman", "JUnit 5"],
+      "cognitive_bias": "pessimism_bias",
+      "friction_sensitivity": 0.7,
+      "velocity_multiplier": 0.8,
+      "tech_debt_tolerance": 0.2
+    },
+    {
+      "role": "tech_lead",
+      "display_name": "Tech Lead Agent",
+      "seniority": "staff",
+      "experience_years": 10,
+      "tech_stack": ["Java 17", "Spring Boot 3", "Azure", "Terraform"],
+      "cognitive_bias": "perfectionism_bias",
+      "friction_sensitivity": 0.6,
+      "velocity_multiplier": 0.9,
+      "tech_debt_tolerance": 0.1
+    },
+    {
+      "role": "product_owner",
+      "display_name": "PO Agent",
+      "seniority": "senior",
+      "experience_years": 7,
+      "tech_stack": ["Jira", "Confluence", "Miro"],
+      "cognitive_bias": "feature_bias",
+      "friction_sensitivity": 0.4,
+      "velocity_multiplier": 1.2,
+      "tech_debt_tolerance": 0.8
+    },
+    {
+      "role": "security_architect",
+      "display_name": "SecArch Agent",
+      "seniority": "principal",
+      "experience_years": 12,
+      "tech_stack": ["Azure Security Center", "Trivy", "OWASP ZAP", "Vault"],
+      "cognitive_bias": "risk_aversion_bias",
+      "friction_sensitivity": 0.5,
+      "velocity_multiplier": 0.7,
+      "tech_debt_tolerance": 0.05
+    },
+    {
+      "role": "cloud_engineer",
+      "display_name": "Cloud Agent",
+      "seniority": "senior",
+      "experience_years": 4,
+      "tech_stack": ["Terraform", "Helm", "Azure DevOps", "Docker"],
+      "cognitive_bias": "cost_optimization_bias",
+      "friction_sensitivity": 0.4,
+      "velocity_multiplier": 1.0,
+      "tech_debt_tolerance": 0.5
+    },
+    {
+      "role": "scrum_master",
+      "display_name": "SM Agent",
+      "seniority": "senior",
+      "experience_years": 8,
+      "tech_stack": ["Jira", "Miro", "Confluence"],
+      "cognitive_bias": "neutral_facilitator",
+      "friction_sensitivity": 0.9,
+      "velocity_multiplier": 0.0,
+      "tech_debt_tolerance": 0.5
+    },
+    {
+      "role": "software_architect",
+      "display_name": "SoftArch Agent",
+      "seniority": "principal",
+      "experience_years": 15,
+      "tech_stack": ["Java", "Spring Boot", "Azure Service Bus", "DDD"],
+      "cognitive_bias": "long_term_vision_bias",
+      "friction_sensitivity": 0.5,
+      "velocity_multiplier": 0.85,
+      "tech_debt_tolerance": 0.15
+    }
+  ]
+}
