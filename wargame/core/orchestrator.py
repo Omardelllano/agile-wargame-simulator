@@ -44,7 +44,11 @@ class Orchestrator:
         self.vector_store = AgentVectorStore()
         self.renderer = PromptRenderer()
         self.exporter = ReportExporter(str(self.output_dir))
-        self.god_agent = GodAgent(provider=provider, interaction_log=self.interaction_log)
+        self.god_agent = GodAgent(
+            provider=provider,
+            interaction_log=self.interaction_log,
+            output_dir=str(self.output_dir),
+        )
 
         self.friction_detector = FrictionDetector()
         self._agents = self._build_agents()

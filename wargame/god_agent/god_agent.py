@@ -15,11 +15,16 @@ class GodAgent:
     Runs after every sprint. Produces a SprintReport via MAP → REDUCE → EXPORT.
     """
 
-    def __init__(self, provider: BaseLLMProvider, interaction_log: InteractionLog):
+    def __init__(
+        self,
+        provider: BaseLLMProvider,
+        interaction_log: InteractionLog,
+        output_dir: str = "output",
+    ):
         self.provider = provider
         self.log = interaction_log
         self.reducer = GodAgentReducer(provider)
-        self.exporter = ReportExporter()
+        self.exporter = ReportExporter(output_dir)
 
     async def synthesize(self, world_state: WorldState) -> SprintReport:
         """

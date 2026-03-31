@@ -5,7 +5,10 @@
       "Bash(python -c \":*)",
       "Bash(python -m wargame run --provider mock --scenario seeds/etp/ --sprints 2)",
       "Bash(python -:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(python -m pytest tests/ -v --collect-only)",
+      "Bash(python -m pytest tests/test_providers.py -v)",
+      "Bash(python -m pytest tests/ -v)"
     ]
   }
 }
