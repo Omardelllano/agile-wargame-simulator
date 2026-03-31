@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from wargame.dashboard.routes.graph import router as graph_router
 from wargame.dashboard.routes.reports import router as reports_router
 from wargame.dashboard.routes.simulate import router as simulate_router
 
@@ -17,6 +18,7 @@ templates = Jinja2Templates(directory=str(_HERE / "templates"))
 
 app.include_router(simulate_router)
 app.include_router(reports_router)
+app.include_router(graph_router)
 
 
 @app.get("/", response_class=HTMLResponse)

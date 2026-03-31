@@ -12,20 +12,23 @@ const AGENTS = [
 ];
 
 const state = {
-  simId: null,
-  es: null,             // EventSource
-  reports: {},          // sprint_num -> report dict
-  activeReportSprint: null,
+  simId:             null,
+  es:                null,   // EventSource
+  reports:           {},     // sprint_num -> report dict
+  activeReportSprint:null,
+  activeTab:         "log",  // "log" | "graph"
+  agentFilter:       null,   // agentId string | null
 };
 
 // ---------------------------------------------------------------------------
-// DOM refs (populated after DOMContentLoaded)
+// DOM refs
 // ---------------------------------------------------------------------------
 let elProvider, elScenario, elSprints, elRunBtn;
 let elStatusBadge, elCurrentSprint;
 let elGaugeFill, elGaugeVal;
 let elLogTbody;
 let elReportTabs, elReportContent;
+let elTabLog, elTabGraph, elPanelLog, elPanelGraph;
 
 // ---------------------------------------------------------------------------
 // Boot
@@ -42,13 +45,60 @@ document.addEventListener("DOMContentLoaded", async () => {
   elLogTbody      = document.getElementById("log-tbody");
   elReportTabs    = document.getElementById("report-tabs");
   elReportContent = document.getElementById("report-content");
+  elTabLog        = document.getElementById("tab-log");
+  elTabGraph      = document.getElementById("tab-graph");
+  elPanelLog      = document.getElementById("panel-log");
+  elPanelGraph    = document.getElementById("panel-graph");
 
   elRunBtn.addEventListener("click", onRun);
+
+  // Tab switching
+  elTabLog.addEventListener("click",   () => switchTab("log"));
+  elTabGraph.addEventListener("click", () => switchTab("graph"));
+
+  // Init D3 graph module
+  const graphContainer = document.getElementById("graph-container");
+  const tooltip        = document.getElementById("graph-tooltip");
+  if (window.GraphModule) {
+    GraphModule.init(graphContainer, tooltip, filterLogByAgent);
+  }
 
   await loadScenarios();
   buildAgentCards();
   setStatus("idle");
 });
+
+// ---------------------------------------------------------------------------
+// Tab management
+// ---------------------------------------------------------------------------
+function switchTab(name) {
+  state.activeTab = name;
+
+  elTabLog.classList.toggle("active",   name === "log");
+  elTabGraph.classList.toggle("active", name === "graph");
+  elPanelLog.style.display   = name === "log"   ? "" : "none";
+  elPanelGraph.style.display = name === "graph" ? "" : "none";
+
+  if (name === "graph" && state.simId && window.GraphModule) {
+    GraphModule.refresh(state.simId);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Log filter (called by GraphModule on node click)
+// ---------------------------------------------------------------------------
+function filterLogByAgent(agentId) {
+  state.agentFilter = agentId;
+  const rows = elLogTbody.querySelectorAll("tr");
+  rows.forEach(tr => {
+    if (!agentId) {
+      tr.style.display = "";
+      return;
+    }
+    const cell = tr.querySelector(".col-agent");
+    tr.style.display = (cell && cell.textContent === agentId) ? "" : "none";
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Scenarios
@@ -83,8 +133,11 @@ async function onRun() {
   elReportContent.innerHTML = '<p class="empty-state">Waiting for sprint reports…</p>';
   state.reports = {};
   state.activeReportSprint = null;
+  state.agentFilter = null;
   resetGauge();
   resetAgentCards();
+
+  if (window.GraphModule) GraphModule.reset();
 
   elRunBtn.disabled = true;
   setStatus("running");
@@ -121,10 +174,9 @@ function openStream(simId) {
   es.addEventListener("sprint_complete",     onSprintComplete);
   es.addEventListener("simulation_complete", onSimulationComplete);
   es.addEventListener("error",               onErrorEvent);
-  es.addEventListener("heartbeat",           () => {}); // keep-alive noop
+  es.addEventListener("heartbeat",           () => {});
 
-  es.onerror = (e) => {
-    // Only flag as error if we were running (SSE closed after simulation_complete is fine)
+  es.onerror = () => {
     if (elStatusBadge.dataset.status === "running") {
       setStatus("error");
       appendErrorRow("SSE connection lost.");
@@ -135,7 +187,7 @@ function openStream(simId) {
 }
 
 // ---------------------------------------------------------------------------
-// Event handlers
+// SSE event handlers
 // ---------------------------------------------------------------------------
 function onTurnEvent(e) {
   const d = JSON.parse(e.data);
@@ -145,6 +197,12 @@ function onTurnEvent(e) {
     appendTurnRow(d.sprint, d.turn, r);
     updateAgentCard(r);
   });
+
+  // Re-apply log filter if one is active
+  if (state.agentFilter) filterLogByAgent(state.agentFilter);
+
+  // Update graph in real time
+  if (window.GraphModule) GraphModule.onTurnData(d.responses);
 }
 
 function onSprintComplete(e) {
@@ -152,6 +210,9 @@ function onSprintComplete(e) {
   state.reports[report.sprint] = report;
   addReportTab(report.sprint);
   updateGauge(report.friction_index);
+
+  // Refresh graph with server-side data after each sprint
+  if (window.GraphModule && state.simId) GraphModule.refresh(state.simId);
 }
 
 function onSimulationComplete(e) {
@@ -160,6 +221,9 @@ function onSimulationComplete(e) {
   state.es.close();
   state.es = null;
   elCurrentSprint.textContent = "Simulation complete";
+
+  // Final graph refresh
+  if (window.GraphModule && state.simId) GraphModule.refresh(state.simId);
 }
 
 function onErrorEvent(e) {
@@ -186,7 +250,7 @@ function appendTurnRow(sprint, turn, r) {
     <td class="col-conf">${r.confidence.toFixed(2)}</td>
     <td class="col-rat" title="${escapeHtml(r.rationale)}">${escapeHtml(rationale)}</td>
   `;
-  elLogTbody.prepend(tr);  // newest on top
+  elLogTbody.prepend(tr);
 }
 
 function appendErrorRow(msg) {
@@ -263,13 +327,10 @@ function addReportTab(sprint) {
   tab.dataset.sprint = sprint;
   tab.addEventListener("click", () => showReport(sprint));
   elReportTabs.appendChild(tab);
-
-  // Auto-show the latest sprint report
   showReport(sprint);
 }
 
 function showReport(sprint) {
-  // Update tab active state
   elReportTabs.querySelectorAll(".sprint-tab").forEach(t => {
     t.classList.toggle("active", parseInt(t.dataset.sprint, 10) === sprint);
   });
@@ -278,7 +339,7 @@ function showReport(sprint) {
   const report = state.reports[sprint];
   if (!report) { elReportContent.innerHTML = '<p class="empty-state">No data yet.</p>'; return; }
 
-  const confPct   = Math.round(report.confidence_score * 100);
+  const confPct = Math.round(report.confidence_score * 100);
   const reliableLabel = report.is_reliable
     ? '<span style="color:var(--green)">RELIABLE</span>'
     : '<span style="color:var(--yellow)">LOW CONFIDENCE</span>';
@@ -338,7 +399,7 @@ function showReport(sprint) {
 }
 
 // ---------------------------------------------------------------------------
-// Status
+// Status badge
 // ---------------------------------------------------------------------------
 function setStatus(s) {
   elStatusBadge.className = `status-${s}`;
@@ -350,7 +411,7 @@ function setStatus(s) {
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Utilities
 // ---------------------------------------------------------------------------
 async function fetchJSON(url, opts = {}) {
   const defaults = { headers: { "Content-Type": "application/json" } };

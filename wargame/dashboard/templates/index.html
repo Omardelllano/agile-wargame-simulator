@@ -66,23 +66,38 @@
       </div>
     </div>
 
-    <!-- ── Center: Live turn log ── -->
+    <!-- ── Center: Tab bar + Log | Graph ── -->
     <div class="center-panel">
       <div class="log-header" id="current-sprint">Waiting to start…</div>
-      <div class="turn-log">
-        <table>
-          <thead>
-            <tr>
-              <th class="col-sprint">Sprint</th>
-              <th class="col-turn">Turn</th>
-              <th class="col-agent">Agent</th>
-              <th class="col-action">Action</th>
-              <th class="col-conf">Conf</th>
-              <th class="col-rat">Rationale</th>
-            </tr>
-          </thead>
-          <tbody id="log-tbody"></tbody>
-        </table>
+
+      <!-- Tab bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-log">Simulation Log</button>
+        <button class="tab-btn"        id="tab-graph">Agent Graph</button>
+      </div>
+
+      <!-- Simulation Log panel -->
+      <div id="panel-log" class="tab-content">
+        <div class="turn-log">
+          <table>
+            <thead>
+              <tr>
+                <th class="col-sprint">Sprint</th>
+                <th class="col-turn">Turn</th>
+                <th class="col-agent">Agent</th>
+                <th class="col-action">Action</th>
+                <th class="col-conf">Conf</th>
+                <th class="col-rat">Rationale</th>
+              </tr>
+            </thead>
+            <tbody id="log-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Agent Graph panel -->
+      <div id="panel-graph" class="tab-content" style="display:none;">
+        <div id="graph-container"></div>
       </div>
     </div>
 
@@ -98,6 +113,15 @@
   </div><!-- /main-content -->
 </div><!-- /app -->
 
+<!-- Edge tooltip -->
+<div id="graph-tooltip"></div>
+
+<!-- D3 v7 (must load before graph.js) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+
+<script src="/static/graph.js"></script>
 <script src="/static/dashboard.js"></script>
 </body>
 </html>
