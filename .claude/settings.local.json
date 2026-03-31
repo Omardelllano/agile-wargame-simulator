@@ -14,7 +14,14 @@
       "Bash(python -m pytest tests/ --tb=short -q)",
       "Bash(echo \"EXIT:$?\")",
       "Bash(python -m pytest tests/test_e2e_mock.py --tb=short -q)",
-      "Bash(python -m pytest tests/test_god_agent.py tests/test_e2e_mock.py --tb=short -q)"
+      "Bash(python -m pytest tests/test_god_agent.py tests/test_e2e_mock.py --tb=short -q)",
+      "Bash(python -m wargame serve --port 8000)",
+      "Bash(netstat -ano)",
+      "Bash(cmd.exe /c \"taskkill /PID 27984 /F 2>&1\")",
+      "Bash(python:*)",
+      "Bash(OUTPUT_FILE=\"/c/Users/omard/AppData/Local/Temp/claude/C--Users-omard-OneDrive-Documentos-Agile-Wargame-Simulator/ef20ee78-e57c-4ef1-965a-9e876798c875/tasks/be49v6olu.output\")",
+      "Read(//c/Users/omard/OneDrive/Documentos/Agile Wargame Simulator/**)",
+      "Bash(OUTPUT_FILE=/c/Users/omard/AppData/Local/Temp/claude/C--Users-omard-OneDrive-Documentos-Agile-Wargame-Simulator/ef20ee78-e57c-4ef1-965a-9e876798c875/tasks/be49v6olu.output)"
     ]
   }
 }
