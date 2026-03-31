@@ -297,6 +297,24 @@ header .version {
   padding: 14px;
 }
 
+.report-update-indicator {
+  display: none;
+  font-size: 10px;
+  color: var(--green);
+  border: 1px solid var(--green);
+  border-radius: 4px;
+  padding: 3px 8px;
+  margin-bottom: 8px;
+  text-align: center;
+  animation: fadeIn 0.2s ease;
+}
+.report-update-indicator.visible { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .sprint-tabs {
   display: flex;
   flex-wrap: wrap;

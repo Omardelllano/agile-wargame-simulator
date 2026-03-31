@@ -205,11 +205,24 @@ function onTurnEvent(e) {
   if (window.GraphModule) GraphModule.onTurnData(d.responses);
 }
 
-function onSprintComplete(e) {
+async function onSprintComplete(e) {
   const report = JSON.parse(e.data);
   state.reports[report.sprint] = report;
   addReportTab(report.sprint);
   updateGauge(report.friction_index);
+
+  // Fetch authoritative report data from server and merge into local state
+  if (state.simId) {
+    try {
+      const fresh = await fetchJSON(`/report/${state.simId}`);
+      if (Array.isArray(fresh.reports)) {
+        fresh.reports.forEach(r => { state.reports[r.sprint] = r; });
+      }
+      showReport(report.sprint);
+    } catch (_) {}
+  }
+
+  showUpdateIndicator(`Sprint ${report.sprint} report updated`);
 
   // Refresh graph with server-side data after each sprint
   if (window.GraphModule && state.simId) GraphModule.refresh(state.simId);
@@ -396,6 +409,18 @@ function showReport(sprint) {
   }
 
   elReportContent.innerHTML = html;
+}
+
+// ---------------------------------------------------------------------------
+// Report update indicator
+// ---------------------------------------------------------------------------
+function showUpdateIndicator(msg) {
+  const el = document.getElementById("report-update-indicator");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add("visible");
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(() => el.classList.remove("visible"), 3000);
 }
 
 // ---------------------------------------------------------------------------

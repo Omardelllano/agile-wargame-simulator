@@ -197,45 +197,74 @@ class GodAgentReducer:
         decay = vel_map.get("velocity_decay_pct", 0.0)
         total_completed = vel_map.get("total_completed", 0)
 
-        if hotspots:
+        # Compute friction_index from map data (mirrors reduce() formula)
+        total_friction = friction_map.get("total_friction_events", 0)
+        friction_index = min(total_friction / max(total_friction + 4, 1), 1.0)
+
+        # Friction risk: triggered when friction_index > 0.5
+        if friction_index > 0.5 and hotspots:
             top = max(hotspots, key=lambda h: h["conflict_count"])
             pair_str = " vs ".join(top["agent_pair"])
             risks.append(PredictedRisk(
                 id=f"R-{risk_id:02d}",
-                severity="HIGH" if top["conflict_count"] >= 3 else "MEDIUM",
+                severity="HIGH",
                 sprint_impact=1,
-                description=f"Recurring friction between {pair_str}: {top['root_cause']}",
-                recommendation=f"Facilitate alignment session between {pair_str} to resolve chronic conflict.",
+                description=(
+                    f"High friction index ({friction_index:.0%}): top conflict pair is "
+                    f"{pair_str} with {top['conflict_count']} events. "
+                    f"Root cause: {top['root_cause']}"
+                ),
+                recommendation=f"Schedule a mediated sync between {pair_str} before next sprint planning.",
             ))
             risk_id += 1
             recs.append(
-                f"Schedule conflict resolution between {pair_str} — {top['conflict_count']} friction events recorded."
+                f"Conflict resolution needed: {pair_str} — {top['conflict_count']} friction events "
+                f"(friction index {friction_index:.0%})."
             )
+        elif hotspots:
+            top = max(hotspots, key=lambda h: h["conflict_count"])
+            pair_str = " vs ".join(top["agent_pair"])
+            recs.append(f"Monitor {pair_str} — {top['conflict_count']} friction events recorded.")
 
+        # Blocked dependencies risk: names actual story IDs and blocking agents
         if blocked:
-            blockers = {d["blocked_by_agent"] for d in blocked}
+            story_ids = [d["story_id"] for d in blocked]
+            blockers = sorted({d["blocked_by_agent"] for d in blocked})
             risks.append(PredictedRisk(
                 id=f"R-{risk_id:02d}",
-                severity="HIGH" if len(blocked) >= 3 else "MEDIUM",
+                severity="HIGH" if len(blocked) >= 2 else "MEDIUM",
                 sprint_impact=1,
-                description=f"{len(blocked)} story/stories blocked by: {', '.join(blockers)}",
-                recommendation="Prioritize unblocking sessions; assign dedicated review time for blocking agents.",
+                description=(
+                    f"Stories {', '.join(story_ids)} are blocked by "
+                    f"{', '.join(blockers)}"
+                ),
+                recommendation=(
+                    f"Prioritize unblocking sessions with {', '.join(blockers)} "
+                    f"to clear {', '.join(story_ids)}."
+                ),
             ))
             risk_id += 1
             recs.append(
-                f"Unblock {len(blocked)} dependent stories — blocker(s): {', '.join(blockers)}."
+                f"Unblock {', '.join(story_ids)} — current blocker(s): {', '.join(blockers)}."
             )
 
-        if debt > 10:
+        # Tech debt risk: triggered when delta > 15
+        if debt > 15:
             risks.append(PredictedRisk(
                 id=f"R-{risk_id:02d}",
                 severity="HIGH" if debt > 20 else "MEDIUM",
                 sprint_impact=2,
-                description=f"Tech debt accumulating: +{debt} points this sprint",
-                recommendation="Allocate at least 20% of next sprint capacity to debt reduction tasks.",
+                description=(
+                    f"Tech debt spike: +{debt} points added this sprint — "
+                    f"cumulative debt threatens migration velocity."
+                ),
+                recommendation=(
+                    f"Allocate at least 20% of next sprint to debt remediation; "
+                    f"{debt} pts cannot roll forward unchecked."
+                ),
             ))
             risk_id += 1
-            recs.append(f"Schedule debt-reduction sprint — {debt} pts added this sprint.")
+            recs.append(f"Debt remediation needed — {debt} pts of tech debt accrued this sprint.")
 
         if decay < -20:
             risks.append(PredictedRisk(
