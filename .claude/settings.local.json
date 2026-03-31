@@ -9,7 +9,8 @@
       "Bash(python -m pytest tests/ -v --collect-only)",
       "Bash(python -m pytest tests/test_providers.py -v)",
       "Bash(python -m pytest tests/ -v)",
-      "Bash(python -m pytest tests/ -v --tb=short)"
+      "Bash(python -m pytest tests/ -v --tb=short)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

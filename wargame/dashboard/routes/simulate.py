@@ -73,6 +73,8 @@ async def _run_simulation(state: SimState) -> None:
             total_sprints=state.total_sprints,
             db_url=db_url,
         )
+        # Store the Orchestrator's internal UUID so /graph/{sim_id} can query the DB
+        state.db_sim_id = orchestrator.state.simulation_id
 
         def on_turn_complete(sprint: int, turn: int, responses) -> None:
             state.current_sprint = sprint

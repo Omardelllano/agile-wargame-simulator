@@ -20,6 +20,8 @@ class SimState:
     current_sprint: int = 0
     reports: list[dict] = field(default_factory=list)
     queue: asyncio.Queue = field(default_factory=asyncio.Queue)
+    # The Orchestrator generates its own UUID stored in the DB; we map it here
+    db_sim_id: str | None = None
 
 
 def create_sim(sim_id: str, provider: str, scenario: str, total_sprints: int) -> SimState:

@@ -11,6 +11,7 @@ from fastapi import APIRouter, HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
+from wargame.dashboard.sim_registry import get_sim
 from wargame.memory.interaction_log import InteractionTurn
 
 router = APIRouter()
@@ -42,13 +43,19 @@ _MIN_SHARED_STORIES = 2
 
 @router.get("/graph/{sim_id}")
 async def get_graph(sim_id: str):
+    # Resolve the DB-level simulation_id from the registry.
+    # The external sim_id (from POST /simulate) differs from the Orchestrator's
+    # internal simulation_id that is written to interaction_turns.
+    state = get_sim(sim_id)
+    db_query_id = (state.db_sim_id or sim_id) if state else sim_id
+
     db_url = os.environ.get("DATABASE_URL", "sqlite:///./output/wargame.db")
     engine = create_engine(db_url)
 
     with Session(engine) as session:
         turns = (
             session.query(InteractionTurn)
-            .filter(InteractionTurn.simulation_id == sim_id)
+            .filter(InteractionTurn.simulation_id == db_query_id)
             .order_by(InteractionTurn.id)
             .all()
         )
