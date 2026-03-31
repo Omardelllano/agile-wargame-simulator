@@ -55,6 +55,10 @@ class Orchestrator:
         self.turn_manager = TurnManager(self._agents, self.event_bus)
 
     def _build_agents(self):
+        import json
+        import re
+        from collections import Counter
+
         from wargame.agents.cloud_engineer import CloudEngineerAgent
         from wargame.agents.developer import DeveloperAgent
         from wargame.agents.product_owner import ProductOwnerAgent
@@ -64,6 +68,37 @@ class Orchestrator:
         from wargame.agents.software_architect import SoftwareArchitectAgent
         from wargame.agents.tech_lead import TechLeadAgent
 
+        _classes = {
+            "developer":          DeveloperAgent,
+            "qa_engineer":        QAEngineerAgent,
+            "tech_lead":          TechLeadAgent,
+            "product_owner":      ProductOwnerAgent,
+            "security_architect": SecurityArchitectAgent,
+            "cloud_engineer":     CloudEngineerAgent,
+            "scrum_master":       ScrumMasterAgent,
+            "software_architect": SoftwareArchitectAgent,
+        }
+
+        profiles_path = Path(self.scenario_path) / "agent_profiles.json"
+        if profiles_path.exists():
+            profiles = json.loads(profiles_path.read_text(encoding="utf-8"))["agents"]
+            role_counts = Counter(p["role"] for p in profiles)
+            agents = []
+            for p in profiles:
+                cls = _classes.get(p["role"])
+                if cls is None:
+                    continue
+                agent = cls(self.provider, self.vector_store, self.renderer)
+                # When multiple profiles share the same role, use display_name slug as agent_id
+                if role_counts[p["role"]] > 1:
+                    display = p.get("display_name", "")
+                    slug = re.sub(r"[^a-z0-9]+", "_", display.lower()).strip("_")
+                    if slug:
+                        agent.agent_id = slug
+                agents.append(agent)
+            return agents
+
+        # Fallback: hardcoded single-instance list
         return [
             cls(self.provider, self.vector_store, self.renderer)
             for cls in [

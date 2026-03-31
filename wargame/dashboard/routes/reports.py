@@ -50,7 +50,7 @@ async def list_reports():
     if not _OUTPUT_DIR.exists():
         return []
     reports = []
-    for path in sorted(_OUTPUT_DIR.glob("sprint_*.json")):
+    for path in sorted(_OUTPUT_DIR.glob("*/sprint_*.json")):
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
             reports.append({

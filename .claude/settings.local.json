@@ -10,7 +10,10 @@
       "Bash(python -m pytest tests/test_providers.py -v)",
       "Bash(python -m pytest tests/ -v)",
       "Bash(python -m pytest tests/ -v --tb=short)",
-      "Bash(grep -v \"^$\")"
+      "Bash(grep -v \"^$\")",
+      "Bash(python -m pytest tests/ --tb=short -q)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(python -m pytest tests/test_e2e_mock.py --tb=short -q)"
     ]
   }
 }

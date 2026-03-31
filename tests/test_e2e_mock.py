@@ -75,11 +75,12 @@ async def test_all_8_agents_contribute(orchestrator):
     await orchestrator.run(on_turn_complete=on_turn)
 
     agent_ids = {r.agent_id for r in collected_responses}
-    expected = {
-        "developer", "qa_engineer", "tech_lead", "product_owner",
-        "security_architect", "cloud_engineer", "scrum_master", "software_architect",
-    }
-    assert agent_ids == expected, f"Missing agents: {expected - agent_ids}"
+    # Core roles must be present; developer may appear as role or display_name slug
+    non_dev = {"qa_engineer", "tech_lead", "product_owner",
+               "security_architect", "cloud_engineer", "scrum_master", "software_architect"}
+    assert non_dev.issubset(agent_ids), f"Missing agents: {non_dev - agent_ids}"
+    has_dev = "developer" in agent_ids or any(a.startswith("dev_agent") for a in agent_ids)
+    assert has_dev, "No developer agent found in responses"
 
 
 @pytest.mark.asyncio
@@ -104,8 +105,10 @@ async def test_db_rows_written(orchestrator, db_url):
         turn_rows = session.query(InteractionTurn).filter_by(simulation_id=sim_id).all()
         report_rows = session.query(SprintReportRow).filter_by(simulation_id=sim_id).all()
 
-    # 8 agents × 5 turns = 40 rows
-    assert len(turn_rows) == 40, f"Expected 40 turn rows, got {len(turn_rows)}"
+    # agents × 5 turns (9 agents when dual-dev is active from agent_profiles.json)
+    agents_count = len(orchestrator._agents)
+    expected_rows = agents_count * 5
+    assert len(turn_rows) == expected_rows, f"Expected {expected_rows} turn rows, got {len(turn_rows)}"
     assert len(report_rows) == 1
 
 
@@ -113,8 +116,9 @@ async def test_db_rows_written(orchestrator, db_url):
 async def test_sprint_report_json_written(orchestrator, output_dir):
     await orchestrator.run()
 
-    report_path = output_dir / "sprint_01.json"
-    assert report_path.exists(), "sprint_01.json not written"
+    sim_id = orchestrator.state.simulation_id
+    report_path = output_dir / sim_id / "sprint_01.json"
+    assert report_path.exists(), f"sprint_01.json not written at {report_path}"
 
     data = json.loads(report_path.read_text(encoding="utf-8"))
     report = SprintReport(**data)

@@ -2,7 +2,7 @@
   "agents": [
     {
       "role": "developer",
-      "display_name": "Dev Agent",
+      "display_name": "Dev Agent (Senior)",
       "seniority": "senior",
       "experience_years": 5,
       "tech_stack": ["Java 17", "Spring Boot 3", "Hibernate", "Maven"],
@@ -10,6 +10,17 @@
       "friction_sensitivity": 0.3,
       "velocity_multiplier": 1.0,
       "tech_debt_tolerance": 0.6
+    },
+    {
+      "role": "developer",
+      "display_name": "Dev Agent (Junior)",
+      "seniority": "junior",
+      "experience_years": 2,
+      "tech_stack": ["Java 17", "Spring Boot 3"],
+      "cognitive_bias": "uncertainty_bias",
+      "friction_sensitivity": 0.5,
+      "velocity_multiplier": 0.6,
+      "tech_debt_tolerance": 0.7
     },
     {
       "role": "qa_engineer",
@@ -41,7 +52,7 @@
       "tech_stack": ["Jira", "Confluence", "Miro"],
       "cognitive_bias": "feature_bias",
       "friction_sensitivity": 0.4,
-      "velocity_multiplier": 1.2,
+      "velocity_multiplier": 1.0,
       "tech_debt_tolerance": 0.8
     },
     {
@@ -53,7 +64,7 @@
       "cognitive_bias": "risk_aversion_bias",
       "friction_sensitivity": 0.5,
       "velocity_multiplier": 0.7,
-      "tech_debt_tolerance": 0.05
+      "tech_debt_tolerance": 0.15
     },
     {
       "role": "cloud_engineer",
@@ -74,7 +85,7 @@
       "tech_stack": ["Jira", "Miro", "Confluence"],
       "cognitive_bias": "neutral_facilitator",
       "friction_sensitivity": 0.9,
-      "velocity_multiplier": 0.0,
+      "velocity_multiplier": 0.1,
       "tech_debt_tolerance": 0.5
     },
     {

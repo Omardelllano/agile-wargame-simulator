@@ -36,12 +36,12 @@ class BaseAgent(ABC):
         response = await self.provider.complete(system_prompt, user_prompt)
         # Stamp correct agent_id / turn / sprint regardless of what mock returns
         response = response.model_copy(update={
-            "agent_id": self.role,
+            "agent_id": getattr(self, "agent_id", self.role),
             "turn": turn,
             "sprint": world_state.current_sprint,
         })
         self._validate_grounding(response, world_state)
-        await self.vector_store.persist(self.role, response)
+        await self.vector_store.persist(getattr(self, "agent_id", self.role), response)
         return response
 
     def _validate_grounding(self, response: AgentResponse, state: WorldState) -> None:
@@ -71,7 +71,7 @@ class BaseAgent(ABC):
     async def _retrieve_context(self, world_state: WorldState) -> list[dict]:
         """RAG: fetch last 5 relevant interactions for this agent from ChromaDB."""
         return await self.vector_store.query(
-            agent_id=self.role,
+            agent_id=getattr(self, "agent_id", self.role),
             query=f"sprint {world_state.current_sprint} decisions",
             n_results=5,
         )

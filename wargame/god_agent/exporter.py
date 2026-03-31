@@ -18,13 +18,19 @@ class ReportExporter:
 
     # ------------------------------------------------------------------
 
+    def _sim_dir(self, report: SprintReport) -> Path:
+        """Return output/{simulation_id}/, creating it if needed."""
+        d = self.output_dir / report.simulation_id
+        d.mkdir(parents=True, exist_ok=True)
+        return d
+
     def _write_json(self, report: SprintReport) -> Path:
-        path = self.output_dir / f"sprint_{report.sprint:02d}.json"
+        path = self._sim_dir(report) / f"sprint_{report.sprint:02d}.json"
         path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
         return path
 
     def _write_csv(self, report: SprintReport) -> Path:
-        path = self.output_dir / f"sprint_{report.sprint:02d}.csv"
+        path = self._sim_dir(report) / f"sprint_{report.sprint:02d}.csv"
 
         # Scalar fields from SprintReport (flattened)
         base_row = {

@@ -126,7 +126,7 @@ async def _run_simulation(
     for sprint_num, table in sorted(_tables.items()):
         console.print(table)
         report = reports[sprint_num - 1]
-        report_path = Path("output") / f"sprint_{sprint_num:02d}.json"
+        report_path = Path("output") / orchestrator.state.simulation_id / f"sprint_{sprint_num:02d}.json"
         console.print(
             f"  Sprint report: [dim]{report_path}[/dim] "
             f"(confidence={report.confidence_score:.2f}, reliable={report.is_reliable})"
@@ -134,7 +134,7 @@ async def _run_simulation(
 
     console.print(f"\n[bold green]Simulation complete![/bold green]")
     console.print(f"Database: [dim]{db_url}[/dim]")
-    console.print(f"Reports:  [dim]output/sprint_XX.json[/dim]")
+    console.print(f"Reports:  [dim]output/{orchestrator.state.simulation_id}/sprint_XX.json[/dim]")
 
 
 @main.command()
@@ -143,6 +143,8 @@ def serve(port: int):
     """Start the web dashboard."""
     import uvicorn
     from wargame.dashboard.app import app
+    console.print(f"[bold green]Dashboard ready at http://localhost:{port}[/bold green]")
+    console.print("[dim]Press Ctrl+C to stop[/dim]")
     uvicorn.run(app, host="0.0.0.0", port=port)
 
 
