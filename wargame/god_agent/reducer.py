@@ -65,6 +65,10 @@ class GodAgentReducer:
             tech_debt_delta = max_realistic_debt
             debt_capped = True
 
+        # Propagate the capped value back into debt_map so _heuristic_insights
+        # (and any LLM summariser) always sees the capped figure, never the raw sum.
+        debt_map = {**debt_map, "tech_debt_delta": tech_debt_delta}
+
         # friction_index from hotspot data
         total_friction = friction_map.get("total_friction_events", 0)
         # Approximation: friction_index = capped ratio of friction events
@@ -236,7 +240,8 @@ class GodAgentReducer:
             pair_str = " vs ".join(top["agent_pair"])
             recs.append(f"Monitor {pair_str} — {top['conflict_count']} friction events recorded.")
 
-        # Blocked dependencies risk: names actual story IDs and blocking agents
+        # Blocked dependencies risk: names actual story IDs and blocking agents.
+        # Only references IDs that survived the preemptive-block filter in mapper.
         if blocked:
             story_ids = [d["story_id"] for d in blocked]
             blockers = sorted({d["blocked_by_agent"] for d in blocked})
@@ -257,8 +262,13 @@ class GodAgentReducer:
             recs.append(
                 f"Unblock {', '.join(story_ids)} — current blocker(s): {', '.join(blockers)}."
             )
+        else:
+            recs.append(
+                "No confirmed blocked dependencies this sprint — monitor carry-over stories."
+            )
 
-        # Tech debt risk: triggered when delta > 15
+        # Tech debt risk: triggered when delta > 15.
+        # Uses the already-capped debt value (debt_map was updated before this call).
         if debt > 15:
             risks.append(PredictedRisk(
                 id=f"R-{risk_id:02d}",

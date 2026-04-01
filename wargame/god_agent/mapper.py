@@ -46,6 +46,15 @@ _PAIR_CAUSES: dict[frozenset, str] = {
 # Story-point default when a story is not found in snapshot (shouldn't happen)
 _DEFAULT_POINTS = 5
 
+# Phrases in blocking_reason that indicate a preemptive (invalid) block
+_PREEMPTIVE_PHRASES = [
+    "preemptively",
+    "no stories have been completed yet",
+    "not yet",
+    "must preemptively",
+    "future done status",
+]
+
 
 async def map_friction(log: InteractionLog, sprint: int) -> dict:
     """
@@ -148,10 +157,23 @@ async def map_dependencies(log: InteractionLog, sprint: int) -> dict:
             "impact": _infer_impact(row.source_agent),
         })
 
+    # Filter out preemptive blocks (QA/others blocking TODO stories with
+    # rationale language that indicates no real evidence of failure yet)
+    filtered: list[dict] = []
+    for dep in deps:
+        reason = dep.get("blocking_reason", "").lower()
+        is_preemptive = any(phrase in reason for phrase in _PREEMPTIVE_PHRASES)
+        if not is_preemptive:
+            filtered.append(dep)
+
+    # Sort by days_blocked descending, cap at 5 to keep report concise
+    filtered.sort(key=lambda x: x.get("days_blocked", 0), reverse=True)
+    filtered = filtered[:5]
+
     return {
         "sprint": sprint,
-        "blocked_dependencies": deps,
-        "total_blocked": len(deps),
+        "blocked_dependencies": filtered,
+        "total_blocked": len(filtered),
     }
 
 
