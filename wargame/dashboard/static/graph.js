@@ -139,7 +139,10 @@
         _rt.last[a]    = r.action;
       });
 
-      if (!_nodeSel) return;
+      // Bootstrap graph from _rt counters when the server hasn't provided data
+      // yet (e.g. mid-sprint, before the first sprint_complete fetch).
+      // This lets the graph update in-memory regardless of active tab.
+      if (!_nodeSel) { _bootstrapFromRt(); return; }
 
       // Update node colours + pulse
       const updated = new Set(responses.map(r => r.agent_id));
@@ -171,6 +174,12 @@
       }
     },
 
+    // Re-heat the simulation after a tab switch so accumulated _rt data
+    // animates into position without requiring a server round-trip.
+    restart() {
+      if (_sim && _nodeSel) _sim.alpha(0.1).restart();
+    },
+
     reset() {
       Object.keys(_rt).forEach(k => { _rt[k] = {}; });
       _currentSimId = null;
@@ -184,6 +193,42 @@
       _nodeSel = null;
     },
   };
+
+  // ---------------------------------------------------------------------------
+  // Bootstrap graph from real-time counters (no server data needed)
+  // Called when _nodeSel is null and new turn data arrives mid-sprint.
+  // ---------------------------------------------------------------------------
+  function _bootstrapFromRt() {
+    const agentIds = Object.keys(_rt.actions);
+    if (!agentIds.length || !_g) return;
+
+    const agentSet = new Set(agentIds);
+
+    const nodes = agentIds.map(id => ({
+      id,
+      actions:       _rt.actions[id] || 1,
+      last_action:   _rt.last[id]    || "IDLE",
+      friction_weight: _rt.fw[id]    || 0,
+    }));
+
+    const links = KNOWN_PAIRS
+      .filter(([a, b]) => agentSet.has(a) && agentSet.has(b))
+      .map(([source, target]) => ({
+        source,
+        target,
+        interactions: 1,
+        friction:     0,
+      }));
+
+    _data = { nodes, links };
+
+    // Update container center before first render
+    const w = _container.clientWidth  || 600;
+    const h = _container.clientHeight || 400;
+    _sim.force("center", d3.forceCenter(w / 2, h / 2));
+
+    _render(_data);
+  }
 
   // ---------------------------------------------------------------------------
   // SVG bootstrap (called once)

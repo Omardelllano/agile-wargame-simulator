@@ -6,10 +6,6 @@
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
-const AGENTS = [
-  "developer", "qa_engineer", "tech_lead", "product_owner",
-  "security_architect", "cloud_engineer", "scrum_master", "software_architect",
-];
 
 const state = {
   simId:             null,
@@ -64,7 +60,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   await loadScenarios();
-  buildAgentCards();
   setStatus("idle");
 });
 
@@ -81,6 +76,7 @@ function switchTab(name) {
 
   if (name === "graph" && state.simId && window.GraphModule) {
     GraphModule.refresh(state.simId);
+    GraphModule.restart();
   }
 }
 
@@ -273,27 +269,25 @@ function appendErrorRow(msg) {
 }
 
 // ---------------------------------------------------------------------------
-// Agent cards
+// Agent cards — built dynamically from SSE turn events
 // ---------------------------------------------------------------------------
-function buildAgentCards() {
+function _ensureAgentCard(agentId) {
+  if (document.getElementById(`card-${agentId}`)) return;
   const grid = document.getElementById("agent-grid");
-  grid.innerHTML = "";
-  AGENTS.forEach(role => {
-    const card = document.createElement("div");
-    card.className = "agent-card";
-    card.id = `card-${role}`;
-    card.innerHTML = `
-      <div class="agent-name">${formatRole(role)}</div>
-      <div class="agent-action" id="act-${role}">—</div>
-      <div class="agent-conf"  id="conf-${role}"></div>
-    `;
-    grid.appendChild(card);
-  });
+  const card = document.createElement("div");
+  card.className = "agent-card";
+  card.id = `card-${agentId}`;
+  card.innerHTML = `
+    <div class="agent-name">${formatRole(agentId)}</div>
+    <div class="agent-action" id="act-${agentId}">—</div>
+    <div class="agent-conf"  id="conf-${agentId}"></div>
+  `;
+  grid.appendChild(card);
 }
 
 function updateAgentCard(r) {
+  _ensureAgentCard(r.agent_id);
   const card = document.getElementById(`card-${r.agent_id}`);
-  if (!card) return;
   card.className = `agent-card card-${r.action}`;
   document.getElementById(`act-${r.agent_id}`).innerHTML =
     `<span class="action-${r.action}">${r.action}</span>`;
@@ -302,13 +296,8 @@ function updateAgentCard(r) {
 }
 
 function resetAgentCards() {
-  AGENTS.forEach(role => {
-    const card = document.getElementById(`card-${role}`);
-    if (!card) return;
-    card.className = "agent-card";
-    document.getElementById(`act-${role}`).textContent = "—";
-    document.getElementById(`conf-${role}`).textContent = "";
-  });
+  const grid = document.getElementById("agent-grid");
+  grid.innerHTML = "";
 }
 
 // ---------------------------------------------------------------------------

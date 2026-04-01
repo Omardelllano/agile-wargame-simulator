@@ -32,12 +32,16 @@ async def list_scenarios():
         if d.is_dir() and backlog.exists():
             try:
                 data = json.loads(backlog.read_text(encoding="utf-8"))
+                story_count = sum(
+                    len(e.get("stories", []))
+                    for e in data.get("epics", [])
+                )
                 result.append({
                     "id": d.name,
                     "path": str(d).replace("\\", "/"),
                     "name": data.get("scenario_name", d.name),
                     "total_sprints": data.get("total_sprints", 8),
-                    "story_count": len(data.get("stories", [])),
+                    "story_count": story_count,
                 })
             except Exception:
                 pass
