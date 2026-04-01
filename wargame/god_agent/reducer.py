@@ -56,6 +56,15 @@ class GodAgentReducer:
         velocity = vel_map.get("velocity", 0)
         velocity_decay_pct = vel_map.get("velocity_decay_pct", 0.0)
 
+        # Sanity cap: tech debt cannot exceed 2× sprint velocity (completed pts).
+        # LLMs and mock agents sometimes over-report tech_debt_added.
+        # Floor the cap at 20 so a zero-velocity sprint still gets a meaningful bound.
+        debt_capped = False
+        max_realistic_debt = max(velocity * 2, 20)
+        if tech_debt_delta > max_realistic_debt:
+            tech_debt_delta = max_realistic_debt
+            debt_capped = True
+
         # friction_index from hotspot data
         total_friction = friction_map.get("total_friction_events", 0)
         # Approximation: friction_index = capped ratio of friction events
@@ -85,6 +94,7 @@ class GodAgentReducer:
             velocity_decay_pct=velocity_decay_pct,
             predicted_risks=predicted_risks,
             recommendations=recommendations,
+            debt_capped=debt_capped,
         )
 
     # ------------------------------------------------------------------

@@ -40,6 +40,7 @@ class SprintReport(BaseModel):
 
     predicted_risks: list[PredictedRisk] = []
     recommendations: list[str] = []
+    debt_capped: bool = False  # True when tech_debt_delta was clamped to 2× sprint velocity
 
     @classmethod
     def reliability_threshold(cls) -> float:

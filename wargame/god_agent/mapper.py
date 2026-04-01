@@ -89,15 +89,14 @@ async def map_friction(log: InteractionLog, sprint: int) -> dict:
                     })
 
     # Add singleton hotspots for high-friction agents not in known pairs
+    # NOTE: agent_pair must always be two distinct agents — skip self-pairs
     for agent, count in by_agent.items():
         if count >= 2:
             in_known = any(agent in p for p in seen_pairs)
             if not in_known:
-                hotspots.append({
-                    "agent_pair": [agent, agent],
-                    "conflict_count": count,
-                    "root_cause": f"{agent} is a recurring friction source",
-                })
+                # Self-conflict entries are a data artefact (e.g. IMPEDIMENT_RAISED
+                # by scrum_master has no target_agent), so we skip them entirely.
+                pass
 
     return {
         "sprint": sprint,
@@ -159,6 +158,8 @@ async def map_dependencies(log: InteractionLog, sprint: int) -> dict:
 async def map_tech_debt(log: InteractionLog, sprint: int) -> dict:
     """
     Returns total tech_debt_added across all agents this sprint.
+    Also returns the raw total so the reducer can apply a per-sprint cap
+    once velocity (completed story points) is known.
     """
     with Session(log.engine) as session:
         rows = (
