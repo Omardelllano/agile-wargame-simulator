@@ -69,10 +69,15 @@ class GodAgentReducer:
         # (and any LLM summariser) always sees the capped figure, never the raw sum.
         debt_map = {**debt_map, "tech_debt_delta": tech_debt_delta}
 
-        # friction_index from hotspot data
-        total_friction = friction_map.get("total_friction_events", 0)
-        # Approximation: friction_index = capped ratio of friction events
-        friction_index = min(total_friction / max(total_friction + 4, 1), 1.0)
+        # friction_index: use the per-turn running average already computed by the
+        # Orchestrator (stored in sprint_history[-1].friction_index).
+        # The old formula min(total/max(total+4,1)) saturates to ~0.99 for large
+        # cumulative event counts and ignores the correctly averaged value.
+        friction_index = (
+            world_state.sprint_history[-1].friction_index
+            if world_state.sprint_history
+            else 0.0
+        )
 
         # --- Confidence score (data completeness, no LLM) ---
         confidence = self._calc_confidence(
